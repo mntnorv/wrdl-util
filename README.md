@@ -2,12 +2,17 @@ wrdl-util
 =========
 
 Utitility for wrdl dictionary.
+
 Used for encoding, decoding, testing wrdl dictionary files.
 
 Build
 -----
 
-Build with Visual Studio 2012 Professional. Not tested on other build configurations. **Requires C+11 support**.
+Built with **Visual Studio 2012 Professional**. For now requires Windows, because of Windows-specific timers used, but should work on any OS with little modification.
+
+**Requires C++11 support**.
+
+Not tested on other build configurations.
 
 Usage
 -----
