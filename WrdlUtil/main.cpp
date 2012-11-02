@@ -363,9 +363,18 @@ void wordSearch (vector <letter *> grid, vector<long long> dict, string word, ve
 					if (resultString == currentWord)
 						words.push_back(currentWord);
 
-					if (resultString.length() >= currentWord.length())
+					int resLen = resultString.length();
+					int curLen = currentWord.length();
+
+					if (resLen >= curLen)
 					{
-						if (resultString.substr(0, currentWord.length()) == currentWord)
+						bool search = true;
+
+						if (resLen == curLen && (result+1) != dict.end())
+							if (decodeWord(*(result+1)).substr(0, currentWord.length()) != currentWord)
+								search = false;
+
+						if (search && resultString.substr(0, currentWord.length()) == currentWord)
 						{
 							(*iter)->used = true;
 							wordSearch((*iter)->bordering, dict, currentWord, words, maxLength);
