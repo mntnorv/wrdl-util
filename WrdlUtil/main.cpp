@@ -322,14 +322,16 @@ vector<long long> loadDictionary (string fileName)
 
 void findWords (string fileName, string letters)
 {
+	StartCounter();
 	vector<long long> longDict = loadDictionary(fileName);
+	double loadTime = GetCounter();
 
 	vector<string> words;
 	vector<letter *> grid = createGrid(letters);
 
 	StartCounter();
 	wordSearch(grid, longDict, "", words, 8);
-	cout << GetCounter() << "\n";
+	double searchTime = GetCounter();
 
 	// Deduplicate
 	sort(words.begin(), words.end());
@@ -339,6 +341,9 @@ void findWords (string fileName, string letters)
 
 	for (vector<string>::iterator iter = words.begin(); iter != words.end(); iter++)
 		cout << (*iter) << endl;
+
+	cout << "Load time: " << loadTime << " s\n";
+	cout << "Search time: " << searchTime << " s\n";
 
 	destroyGrid(grid);
 }
