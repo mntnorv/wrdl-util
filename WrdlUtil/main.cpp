@@ -1,10 +1,11 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <cstring>
 #include <algorithm>
+#include <cstring>
+#include <fstream>
 #include <functional>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <vector>
 #include <Windows.h>
 
 #include "encoding.h"
@@ -14,6 +15,7 @@ using namespace std;
 //--------------------------------------------------
 
 const int ALPHABET_SIZE = 26;
+const int MAX_LENGTH = 8;
 
 //--------------------------------------------------
 
@@ -42,7 +44,7 @@ void testDict (string fileName);
 void printFile (string fileName);
 void findWords (string fileName, string letters);
 
-void wordSearch (vector <letter *> grid, vector<long long> dict, string word, vector <string> & words, int maxLength);
+void wordSearch (vector <letter *> grid, vector<long long> dict, vector <string> & words, int startFrom, int searchTo, string word="");
 
 vector<long long> loadDictionary (string fileName);
 void readDictionary(string fileName, function<void (long long)> action);
@@ -326,12 +328,24 @@ void findWords (string fileName, string letters)
 	vector<long long> longDict = loadDictionary(fileName);
 	double loadTime = GetCounter();
 
+	vector<string> wordLists[4];
 	vector<string> words;
 	vector<letter *> grid = createGrid(letters);
 
+	thread threads[4];
+
 	StartCounter();
-	wordSearch(grid, longDict, "", words, 8);
+
+	for (int i = 0; i < 4; i++)
+		threads[i] = thread(wordSearch, grid, longDict, wordLists[i], i*4, (i+1)*4);
+	for (int i = 0; i < 4; i++)
+		threads[i].join();
+	
 	double searchTime = GetCounter();
+
+	for (int i = 0; i < 4; i++)
+		for (vector<string>::iterator iter = wordLists[i].begin(); iter != wordLists[i].end(); iter++)
+			words.push_back(*iter);
 
 	// Deduplicate
 	sort(words.begin(), words.end());
@@ -350,11 +364,20 @@ void findWords (string fileName, string letters)
 
 //--------------------------------------------------
 
-void wordSearch (vector <letter *> grid, vector<long long> dict, string word, vector <string> & words, int maxLength)
+void wordSearch (vector <letter *> grid, vector<long long> dict, vector <string> & words, int startFrom, int searchTo, string word)
 {
-	if (word.length() <= maxLength)
+	if (word.length() <= MAX_LENGTH)
 	{
-		for (vector<letter *>::iterator iter = grid.begin(); iter != grid.end(); iter++)
+		vector<letter *>::iterator iter = grid.begin();
+		vector<letter *>::iterator end = grid.end();
+
+		if (searchTo != -1)
+		{
+			iter += startFrom;
+			end = grid.begin() + searchTo;
+		}
+
+		for (; iter != end; iter++)
 		{
 			if (!(*iter)->used)
 			{
@@ -382,7 +405,7 @@ void wordSearch (vector <letter *> grid, vector<long long> dict, string word, ve
 						if (search && resultString.substr(0, currentWord.length()) == currentWord)
 						{
 							(*iter)->used = true;
-							wordSearch((*iter)->bordering, dict, currentWord, words, maxLength);
+							wordSearch((*iter)->bordering, dict, words, -1, -1, currentWord);
 							(*iter)->used = false;
 						}
 					}
