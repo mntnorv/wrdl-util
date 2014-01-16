@@ -42,7 +42,7 @@ void testDict (string fileName);
 void printFile (string fileName);
 void findWords (string fileName, string letters);
 
-void wordSearch (vector <letter *> grid, vector<long long> dict, string word, vector <string> & words, int maxLength);
+void wordSearch (vector <letter *> grid, vector<long long> dict, string word, vector <string> & words, unsigned int maxLength);
 
 vector<long long> loadDictionary (string fileName);
 void readDictionary(string fileName, function<void (long long)> action);
@@ -283,12 +283,9 @@ void encodeDict (string plainFile, string encodedFile)
 
 		decodeWord (encoded);
 
-		while (((currentChar = (encoded >> shift)) != 0) && (shift <= 64))
+		while (shift < 64)
 		{
-			currentChar &= mask;
-			
-			if (currentChar == 0)
-				encodedDict.put((unsigned char)0xFF);
+			currentChar = (encoded >> shift) & mask;
 			
 			encodedDict.put((unsigned char)currentChar);
 			shift += shiftIncrement;
@@ -350,7 +347,7 @@ void findWords (string fileName, string letters)
 
 //--------------------------------------------------
 
-void wordSearch (vector <letter *> grid, vector<long long> dict, string word, vector <string> & words, int maxLength)
+void wordSearch (vector <letter *> grid, vector<long long> dict, string word, vector <string> & words, unsigned int maxLength)
 {
 	if (word.length() <= maxLength)
 	{
@@ -412,14 +409,8 @@ void readDictionary(string fileName, function<void (long long)> action)
 
 		if (!dictFile.fail())
 		{
-			if (read != 0)
-			{
-				if (read == 0xFF && dictFile.peek() == 0)
-				{
-					dictFile.get (readch);
-					read = 0;
-				}
-					
+			if (shift != 64)
+			{		
 				current |= ((long long)read) << shift;
 				shift += shiftIncrement;
 			}

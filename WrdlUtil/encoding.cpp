@@ -7,12 +7,15 @@ long long encodeWord (std::string word)
 	long long encoded = 0;
 	long long shift = 0;
 	long long shiftIncrement = 5;
+	long long length = word.length();
 
-	for (int i = 0; i < word.length(); i++)
+	for (unsigned int i = 0; i < word.length(); i++)
 	{
 		encoded |= (long long)(word[i] - 64) << shift;
 		shift += shiftIncrement;
 	}
+
+	encoded |= length << (long long)(60);
 
 	return encoded;
 }
@@ -26,10 +29,14 @@ std::string decodeWord (long long encoded)
 	long long shift = 0;
 	long long shiftIncrement = 5;
 	long long currentChar;
+	long long length;
 	bool error = false;
 
-	while ((currentChar = ((encoded >> shift) & mask)) != 0)
+	length = (encoded >> 60) & 0xF;
+
+	while (decoded.length() < length)
 	{
+		currentChar = (encoded >> shift) & mask;
 		decoded += (char)(currentChar + 64);
 		shift += shiftIncrement;
 
